@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Don't Get Got: Beach House Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #1a202c; /* Equivalent to tailwind's gray-900 */
+            color: #f7fafc; /* Equivalent to tailwind's gray-100 */
+        }
+
+        .wallet {
+            border: 2px dashed #4a5568; /* gray-700 */
+        }
+
+        .mission-card {
+            background-color: #2d3748; /* gray-800 */
+            border-left: 5px solid #f6e05e; /* yellow-400 */
+        }
+        
+        .special-mission {
+             border-left: 5px solid #fc8181; /* red-400 */
+        }
+
+        /* Modal styles */
+        .modal-overlay {
+            transition: opacity 0.3s ease;
+        }
+        .modal-content {
+            transition: transform 0.3s ease;
+            max-height: 75vh; /* Ensure modal is never too tall */
+        }
+
+        /* Custom scrollbar for the modal content */
+        .modal-scroll::-webkit-scrollbar {
+            width: 8px;
+        }
+        .modal-scroll::-webkit-scrollbar-track {
+            background: #2d3748; /* gray-800 */
+        }
+        .modal-scroll::-webkit-scrollbar-thumb {
+            background-color: #718096; /* gray-600 */
+            border-radius: 4px;
+            border: 2px solid #2d3748; /* gray-800 */
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 flex flex-col items-center justify-center min-h-screen p-4">
+
+    <div class="text-center mb-6">
+        <h1 class="text-4xl md:text-5xl font-bold text-yellow-300">Don't Get Got</h1>
+        <p class="text-xl text-cyan-300">Beach House Edition</p>
+    </div>
+
+    <!-- Wallet Section -->
+    <div id="wallet" class="wallet w-full max-w-sm p-4 rounded-lg bg-gray-800 shadow-2xl space-y-3">
+        <h2 class="text-lg font-bold text-center text-gray-300 border-b-2 border-gray-600 pb-2">Your Secret Missions</h2>
+        <div id="missions-container" class="space-y-2">
+            <!-- Missions will be injected here by JavaScript -->
+        </div>
+    </div>
+    <p class="mt-4 text-sm text-gray-400">Take a screenshot of your wallet to save it!</p>
+
+
+    <!-- Action Buttons -->
+    <div class="flex space-x-4 mt-6">
+        <button id="new-wallet-btn" class="bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-2 px-4 rounded-lg shadow-lg transition-transform transform hover:scale-105">
+            Get a New Wallet
+        </button>
+        <button id="rules-btn" class="bg-cyan-500 hover:bg-cyan-600 text-gray-900 font-bold py-2 px-4 rounded-lg shadow-lg transition-transform transform hover:scale-105">
+            How to Play
+        </button>
+    </div>
+
+    <!-- Rules Modal -->
+    <div id="rules-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50 opacity-0 pointer-events-none">
+        <div class="modal-content bg-gray-800 rounded-lg shadow-xl w-full max-w-lg border border-cyan-400 transform scale-95 flex flex-col p-6">
+            <h2 class="text-3xl font-bold mb-4 text-cyan-300 flex-shrink-0">Game Rules</h2>
+            <div class="modal-scroll overflow-y-auto pr-2 space-y-3">
+                <div class="text-lg">
+                    <p><strong class="text-yellow-300">Objective:</strong> The game ends on Thursday evening. The player with the most completed missions wins! In the case of a tie, the one who completed the most fastest will win.</p>
+                    <p><strong class="text-yellow-300">How it Works:</strong> This game is played in the background of your vacation. Always be on guard!</p>
+                    <ul class="list-disc list-inside space-y-2 pl-4 mt-2">
+                        <li>Each player gets a secret "wallet" with 6 missions.</li>
+                        <li>Your goal is to trick other players into helping you complete your missions without them realizing it.</li>
+                        <li><strong class="text-green-400">On Success:</strong> If you succeed, reveal your mission and declare "Gotcha!" You're one step closer to victory.</li>
+                        <li><strong class="text-red-400">On Failure:</strong> If a player suspects a trick and calls you out *before* you complete the mission, you fail that mission. It's out of play for you.</li>
+                        <li>The special "Guess What?" mission can always be attempted, even if called out.</li>
+                    </ul>
+                     <p class="mt-2"><strong class="text-yellow-300">Winning:</strong> Keep track of WHEN you completed and failed your missions (like in your notes app). When the game ends on Thursday, the player with the highest score (most completed missions) is the winner.</p>
+                    <p class="font-bold text-center text-xl mt-4 bg-gray-900 p-3 rounded-lg text-yellow-300">IMPORTANT: Take a screenshot of your wallet to save it! If you generate a new one, the old one is gone forever.</p>
+                </div>
+            </div>
+            <button id="close-modal-btn" class="mt-6 bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg w-full flex-shrink-0">
+                Got It!
+            </button>
+        </div>
+    </div>
+
+
+    <script>
+        const missions = {
+            easy: [
+                "Get a player to pass you a drink.",
+                "Get a player to put sunscreen on your back.",
+                "Get a player to take a photo of you.",
+                "Get someone to save your spot while you go to the bathroom.",
+                "Get a player to tell you what time it is.",
+                "Get a player to hold your towel for you.",
+                "Get a player to bring you a snack from the kitchen.",
+                "Ask a player to turn on a light.",
+                "Get a player to check if the ocean water is cold.",
+                "Get a player to hand you a remote.",
+                "Get a player to say 'bless you' after you sneeze.",
+                "Get a player to open a door for you.",
+                "Get a player to borrow something from you.",
+                "Get a player to agree with you on something trivial.",
+                "Get a player to yawn within a minute of you yawning.",
+                "Get a player to tell you what they're reading/watching.",
+                "Get a player to charge your phone for you.",
+                "Get a player to guess what song is playing.",
+                "Get a player to remind you about something later.",
+                "Ask a player to take a sip of your drink to see if they like it.",
+                "Get a player to help you look for your sunglasses (which are on your head).",
+                "Get a player to watch your stuff while you go for a swim.",
+                "Get a player to adjust an umbrella for you.",
+                "Get a player to name a celebrity you look like.",
+                "Get a player to help you find the TV remote.",
+                "Get a player to tell you if you have something in your teeth.",
+                "Get a player to guess a number you're thinking of (1-10).",
+                "Get a player to confirm the day of the week.",
+            ],
+            medium: [
+                "Get a player to bury your feet in the sand.",
+                "Convince a player you saw a dolphin or a whale.",
+                "Get a player to race you to the water's edge.",
+                "Get a player to wear their sunglasses upside down for 1 minute.",
+                "Get a player to make a silly face in a group photo.",
+                "Get a player to try and fail to skip a stone.",
+                "Start humming a song and get another player to ask what it is.",
+                "Get a player to search for a specific color of seashell with you.",
+                "Get someone to tell you a joke.",
+                "Get a player to look out a window to see something that isn't there.",
+                "While in the hot tub, get a player to say it's 'too hot' or 'too cold'.",
+                "Start a slow clap and get one other person to join in.",
+                "Get a player to correct your pronunciation of a word.",
+                "Get a player to high-five you for a reason they don't understand.",
+                "Get a player to recount a dream they had recently.",
+                "Convince a player to try a weird food combination you 'invented'.",
+                "Get a player to use a movie quote in a normal conversation.",
+                "Get a player to tell you a story from their childhood.",
+                "Get a player to try to solve a riddle and fail.",
+                "'Accidentally' splash a player and get them to say 'it's okay'.",
+                "Get a player to help you re-enact a scene from a movie for a photo.",
+                "Hide a player's phone and have them ask you to call it.",
+                "Get a player to sing the chorus of a song with you.",
+                "Get a player to take a 'serious' photo with you.",
+                "Convince a player you have an amazing 'life hack' and demonstrate it.",
+                "Get a player to draw something for you on paper or in the sand.",
+                "Get a player to finish the lyric of a song you start singing.",
+            ],
+            hard: [
+                "Get a player to compliment your sandcastle.",
+                "Hide a seashell in a player's shoe and have them find it.",
+                "Convince a player that it's going to rain on a perfectly sunny day.",
+                "Get a player to look for something you've 'lost' in the pool.",
+                "While watching a movie, get a player to ask 'what just happened?'.",
+                "At the go-kart track, convince a player to let you win the race.",
+                "Convince a player you have a secret, then tell them 'The secret is... you got got!'",
+                "Hide this mission in a board game box and get a player to open it.",
+                "Get a player to admit they are tired and want to go to bed.",
+                "Get a player to unknowingly wear a piece of seaweed for over a minute.",
+                "Get a player to accuse another (innocent) player of trying a mission on them.",
+                "Have a player fetch an item for you from another room that doesn't exist.",
+                "Get two different players to argue about a rule in a game you're playing.",
+                "Start a rumor about a fake house amenity (like a secret sauna).",
+                "Get a player to 'fix' something that isn't actually broken.",
+                "Convince a player you have a splinter and get them to look for it.",
+                "Get a player to be your 'lookout' for something that will never happen.",
+                "Secretly play a weird sound and get a player to ask 'what was that?'.",
+                "Create a 'house award' for something silly and present it to a player.",
+                "Get a player to use a specific weird word (e.g., 'bamboozled') in a sentence.",
+                "Create a fake 'house rule' and get another player to enforce it.",
+                "Get a player to try and fail to unlock your phone with their face.",
+                "Get a player to ask you for serious advice on something.",
+                "Have a player tell you to 'be quiet' during a movie.",
+            ]
+        };
+
+        const specialMission = "Say 'Guess what?' to a player. If they reply with 'What?', you got 'em!";
+        const visitedFlag = 'dgg_beach_edition_visited';
+
+        const missionsContainer = document.getElementById('missions-container');
+        const newWalletBtn = document.getElementById('new-wallet-btn');
+        const rulesBtn = document.getElementById('rules-btn');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        const rulesModal = document.getElementById('rules-modal');
+        const modalContent = rulesModal.querySelector('.modal-content');
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function generateWallet() {
+            missionsContainer.innerHTML = ''; 
+            
+            const specialCard = document.createElement('div');
+            specialCard.className = 'mission-card special-mission p-3 rounded-md shadow-md';
+            specialCard.innerHTML = `<p class="text-base">${specialMission}</p>`;
+            missionsContainer.appendChild(specialCard);
+            
+            const shuffledEasy = shuffleArray([...missions.easy]);
+            const shuffledMedium = shuffleArray([...missions.medium]);
+            const shuffledHard = shuffleArray([...missions.hard]);
+
+            const selectedEasy = shuffledEasy.slice(0, 1);
+            const selectedMedium = shuffledMedium.slice(0, 2);
+            const selectedHard = shuffledHard.slice(0, 2);
+
+            let finalMissions = shuffleArray([...selectedEasy, ...selectedMedium, ...selectedHard]);
+
+            finalMissions.forEach(missionText => {
+                const card = document.createElement('div');
+                card.className = 'mission-card p-3 rounded-md shadow-md';
+                card.innerHTML = `<p class="text-base">${missionText}</p>`;
+                missionsContainer.appendChild(card);
+            });
+        }
+        
+        function openModal() {
+            rulesModal.classList.remove('opacity-0', 'pointer-events-none');
+            modalContent.classList.remove('scale-95');
+        }
+
+        function closeModal() {
+            modalContent.classList.add('scale-95');
+            rulesModal.classList.add('opacity-0');
+            setTimeout(() => {
+                rulesModal.classList.add('pointer-events-none');
+            }, 300); 
+        }
+
+        function handleCloseModal() {
+            // Check if it's the first visit before closing
+            if (!localStorage.getItem(visitedFlag)) {
+                localStorage.setItem(visitedFlag, 'true');
+                closeModalBtn.textContent = 'Got It!';
+            }
+            closeModal();
+        }
+
+        newWalletBtn.addEventListener('click', generateWallet);
+        rulesBtn.addEventListener('click', openModal);
+        closeModalBtn.addEventListener('click', handleCloseModal);
+        rulesModal.addEventListener('click', (e) => {
+            if (e.target === rulesModal) {
+                handleCloseModal();
+            }
+        });
+
+        // On page load, generate wallet and check if it's the first visit
+        window.addEventListener('load', () => {
+            generateWallet();
+            if (!localStorage.getItem(visitedFlag)) {
+                closeModalBtn.textContent = "Let's Play!";
+                openModal();
+            }
+        });
+    </script>
+</body>
+</html>
+
